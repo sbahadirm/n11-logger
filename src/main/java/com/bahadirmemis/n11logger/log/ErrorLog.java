@@ -1,4 +1,4 @@
-package com.bahadirmemis.n11logger;
+package com.bahadirmemis.n11logger.log;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
