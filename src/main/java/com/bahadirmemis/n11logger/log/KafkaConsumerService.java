@@ -21,6 +21,11 @@ public class KafkaConsumerService {
 
     log.info("consume started!");
 
+    //if ("Invalid old password!".equals(message)){
+    //  log.info("consume failed!");
+    //  throw new RuntimeException();
+    //}
+
     ErrorLog errorLog = new ErrorLog();
     errorLog.setDate(LocalDateTime.now());
     errorLog.setMessage(message);
@@ -30,6 +35,11 @@ public class KafkaConsumerService {
 
     log.info("consume finished!");
 
+  }
+
+  @KafkaListener(topics = "errorLog.DLT", groupId = "log-consumer-group-dlt")
+  public void consumeDLT(String message){
+    log.error("Received message from DLT Queue " + message);
   }
 
   @KafkaListener(topics = "infoLog", groupId = "log-consumer-group")
