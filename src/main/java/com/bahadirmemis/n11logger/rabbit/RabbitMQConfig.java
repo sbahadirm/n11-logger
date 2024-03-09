@@ -4,6 +4,7 @@ import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -30,8 +31,23 @@ public class RabbitMQConfig {
   }
 
   @Bean
-  public Binding binding(Queue queue, DirectExchange exchange) {
-    return BindingBuilder.bind(queue).to(exchange).with("routingKey");
+  public Binding binding() {
+    return BindingBuilder.bind(queue()).to(exchange()).with("routingKey");
+  }
+
+  @Bean
+  public Queue dlq() {
+    return new Queue("dlq.queueName", false);
+  }
+
+  @Bean
+  public DirectExchange dlx() {
+    return new DirectExchange("dlx.exchangeName");
+  }
+
+  @Bean
+  public Binding bindingDlq() {
+    return BindingBuilder.bind(dlq()).to(dlx()).with("dlq.routingKey");
   }
 
   @Bean
@@ -63,4 +79,10 @@ public class RabbitMQConfig {
     factory.setMessageConverter(jsonMessageConverter());
     return factory;
   }
+
+  //@Bean
+  //Queue queue() {
+  //  return QueueBuilder.durable("queueName").withArgument("x-dead-letter-exchange", "dlx.exchangeName")
+  //                     .withArgument("x-dead-letter-routing-key", "dlq.routingKey").build();
+  //}
 }

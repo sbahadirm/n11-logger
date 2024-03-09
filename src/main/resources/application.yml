@@ -2,6 +2,14 @@ server:
   port: 8081
 
 spring:
+#  rabbitmq:
+#    listener:
+#      direct:
+#        retry:
+#          enabled: true
+#          initial-interval: 1000ms
+#          max-attempts: 3
+#          max-interval: 10000ms
   kafka:
     consumer:
       bootstrap-servers: localhost:9092
