@@ -2,6 +2,8 @@ package com.bahadirmemis.n11logger.rabbit;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
@@ -16,20 +18,35 @@ public class RabbitMQConsumerService {
 
   private final RabbitTemplate rabbitTemplate;
 
-  private static void doIt(String message) {
+  private static void doIt(Message message) {
 
-    if ("bahadir".equals(message)) {
-      throw new RuntimeException();
-    }
-    log.info(message);
+    log.info(message.toString());
+    //if ("bahadir".equals("bahadir")) {
+    throw new RuntimeException();
+    //}
   }
 
   @RabbitListener(queues = "queueName")
-  public void consume(String message) {
+  public void consume(Message message) {
+
+    MessageProperties props = message.getMessageProperties();
+    Integer retries = props.getHeader("x-retries");
+    if (retries == null) {
+      retries = 0;
+    }
+
     try {
       doIt(message);
-    } catch (Exception e){
-      rabbitTemplate.convertAndSend("dlx.exchangeName", "dlq.routingKey", message);
+    } catch (Exception e) {
+
+      if (retries < 3) {
+        retries++;
+        props.setHeader("x-retries", retries);
+        rabbitTemplate.send(props.getReceivedExchange(), props.getReceivedRoutingKey(),
+                            message);
+      } else {
+        rabbitTemplate.convertAndSend("dlx.exchangeName", "dlq.routingKey", message);
+      }
     }
   }
 
